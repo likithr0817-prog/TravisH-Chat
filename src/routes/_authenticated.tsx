@@ -1,0 +1,80 @@
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Menu } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { Sidebar, useActiveConversationId } from "@/components/chat/Sidebar";
+import { listConversations, type Conversation } from "@/lib/chat-db";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+
+export const Route = createFileRoute("/_authenticated")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({ to: "/auth" });
+    }
+  },
+  component: () => (
+    <AuthProvider>
+      <AuthedShell />
+    </AuthProvider>
+  ),
+});
+
+function AuthedShell() {
+  const { loading, user } = useAuth();
+  const navigate = useNavigate();
+  const activeId = useActiveConversationId();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const refetch = () => {
+    listConversations().then(setConversations).catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    refetch();
+    const onChange = () => refetch();
+    window.addEventListener("conversations:changed", onChange);
+    return () => window.removeEventListener("conversations:changed", onChange);
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth" });
+  }, [loading, user, navigate]);
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">Loading…</div>;
+  }
+
+  return (
+    <div className="flex h-screen w-full bg-background text-foreground">
+      <div className="hidden md:block">
+        <Sidebar conversations={conversations} refetch={refetch} activeId={activeId} />
+      </div>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 w-72">
+          <Sidebar
+            conversations={conversations}
+            refetch={refetch}
+            activeId={activeId}
+            onClose={() => setMobileOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+      <main className="flex-1 flex flex-col min-w-0">
+        <div className="md:hidden border-b border-border p-2">
+          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} aria-label="Menu">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="flex-1 min-h-0">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+}
