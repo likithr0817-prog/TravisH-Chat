@@ -165,9 +165,6 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
           <p className="truncate text-sm font-medium">{user?.email}</p>
         </div>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/settings" })} aria-label="Settings">
-          <Settings className="h-4 w-4" />
-        </Button>
         <Button variant="ghost" size="icon" onClick={() => signOut()} aria-label="Sign out">
           <LogOut className="h-4 w-4" />
         </Button>
