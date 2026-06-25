@@ -37,6 +37,9 @@ function AuthedShell() {
   useEffect(() => {
     if (!user) return;
     refetch();
+    const onChange = () => refetch();
+    window.addEventListener("conversations:changed", onChange);
+    return () => window.removeEventListener("conversations:changed", onChange);
   }, [user]);
 
   useEffect(() => {
