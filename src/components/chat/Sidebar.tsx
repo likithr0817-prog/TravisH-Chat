@@ -7,7 +7,6 @@ import {
   Search,
   Trash2,
   LogOut,
-  Settings,
   MessageSquare,
   Moon,
   Sun,
