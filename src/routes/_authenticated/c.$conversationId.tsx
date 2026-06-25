@@ -72,5 +72,3 @@ function ChatPage() {
   );
 }
 
-// satisfy TypeScript notFound import if unused
-void notFound;
