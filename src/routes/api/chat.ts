@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import type { Database } from "@/integrations/supabase/types";
 
-const SYSTEM_PROMPT =
-  "You are a helpful, friendly AI assistant. Format responses with markdown. Use fenced code blocks with language hints. Be concise but thorough.";
+const SYSTEM_PROMPT = `You are a helpful, friendly AI assistant. Today's date is ${new Date().toISOString().slice(0, 10)}.
+Format responses with markdown. Use fenced code blocks with language hints. Be concise but thorough.
+You have a web_search tool powered by Firecrawl. Use it whenever the user asks about current events, recent news, today's date-sensitive info, prices, scores, weather, or anything that may have changed after your training cutoff. Always cite sources with markdown links.`;
 
 type Body = {
   messages?: UIMessage[];
