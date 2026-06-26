@@ -1,7 +1,8 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X } from "lucide-react";
+import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X, Code2, Mail, Map, Lightbulb } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
