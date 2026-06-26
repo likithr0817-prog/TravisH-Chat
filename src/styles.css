@@ -132,6 +132,13 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+:root {
+  --brand-from: oklch(0.62 0.22 295);
+  --brand-to: oklch(0.7 0.18 240);
+  --gradient-brand: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+  --shadow-brand: 0 10px 40px -10px color-mix(in oklab, var(--brand-from) 45%, transparent);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -140,5 +147,21 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-feature-settings: "cv11", "ss01";
   }
+}
+
+@utility bg-brand-gradient {
+  background-image: var(--gradient-brand);
+}
+
+@utility text-brand-gradient {
+  background-image: var(--gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility shadow-brand {
+  box-shadow: var(--shadow-brand);
 }
