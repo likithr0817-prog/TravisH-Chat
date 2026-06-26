@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, RefreshCcw, Square, Sparkles } from "lucide-react";
+import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -42,6 +42,10 @@ export function ChatWindow({
   const [model, setModel] = useState(initialModel);
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<{ name: string; text: string }[]>([]);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const titleSetRef = useRef(initialTitle !== "New chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -103,9 +107,81 @@ export function ChatWindow({
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const text = input.trim();
-    if (!text || isBusy || !token) return;
+    if ((!text && attachments.length === 0) || isBusy || !token) return;
+    let full = text;
+    if (attachments.length) {
+      const blocks = attachments
+        .map((a) => `\n\n[Attached file: ${a.name}]\n\`\`\`\n${a.text}\n\`\`\``)
+        .join("");
+      full = `${text}${blocks}`;
+    }
     setInput("");
-    await sendMessage({ text });
+    setAttachments([]);
+    await sendMessage({ text: full });
+  };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files) return;
+    const next: { name: string; text: string }[] = [];
+    for (const f of Array.from(files)) {
+      if (f.size > 2 * 1024 * 1024) {
+        toast.error(`${f.name} is too large (max 2MB)`);
+        continue;
+      }
+      if (f.type.startsWith("image/")) {
+        toast.message(`${f.name} attached as reference (vision parsing not enabled)`);
+        next.push({ name: f.name, text: `<image: ${f.name}, ${Math.round(f.size / 1024)}KB>` });
+        continue;
+      }
+      try {
+        const text = await f.text();
+        next.push({ name: f.name, text: text.slice(0, 50000) });
+      } catch {
+        toast.error(`Failed to read ${f.name}`);
+      }
+    }
+    setAttachments((prev) => [...prev, ...next]);
+  };
+
+  const toggleVoice = () => {
+    const SR =
+      (typeof window !== "undefined" &&
+        ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+      null;
+    if (!SR) {
+      toast.error("Voice input not supported in this browser");
+      return;
+    }
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.lang = navigator.language || "en-US";
+    let finalText = "";
+    rec.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setInput((prev) => {
+        const base = prev.replace(/\s*\[\.\.\.\].*$/, "");
+        return (base + " " + finalText + (interim ? ` [...]${interim}` : "")).trimStart();
+      });
+    };
+    rec.onerror = () => setListening(false);
+    rec.onend = () => {
+      setListening(false);
+      setInput((prev) => prev.replace(/\s*\[\.\.\.\].*$/, "").trimEnd());
+    };
+    recognitionRef.current = rec;
+    rec.start();
+    setListening(true);
   };
 
   return (
@@ -212,6 +288,27 @@ export function ChatWindow({
           onSubmit={handleSubmit}
           className="mx-auto max-w-3xl relative rounded-2xl border border-border bg-card shadow-sm focus-within:ring-2 focus-within:ring-ring transition"
         >
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 p-2 pb-0">
+              {attachments.map((a, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs"
+                >
+                  <Paperclip className="h-3 w-3" />
+                  <span className="max-w-[160px] truncate">{a.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAttachments((p) => p.filter((_, j) => j !== i))}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
+                    aria-label="Remove attachment"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <Textarea
             ref={textareaRef}
             value={input}
@@ -224,8 +321,41 @@ export function ChatWindow({
             }}
             placeholder="Message AI…"
             rows={1}
-            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pr-24 min-h-[52px] max-h-48"
+            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pl-20 pr-24 min-h-[52px] max-h-48"
           />
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".txt,.md,.json,.csv,.log,text/*,image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              handleFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <div className="absolute left-2 bottom-2 flex items-center gap-1">
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant={listening ? "default" : "ghost"}
+              className="h-8 w-8"
+              onClick={toggleVoice}
+              aria-label="Voice input"
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          </div>
           <div className="absolute right-2 bottom-2 flex items-center gap-1">
             {messages.length > 0 && !isBusy && (
               <Button
@@ -247,7 +377,7 @@ export function ChatWindow({
               <Button
                 type="submit"
                 size="icon"
-                disabled={!input.trim() || !token}
+                disabled={(!input.trim() && attachments.length === 0) || !token}
                 className="h-8 w-8"
                 aria-label="Send"
               >
