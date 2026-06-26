@@ -95,8 +95,17 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
 
   return (
     <aside className="flex h-full w-72 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
-      <div className="p-3 space-y-2 border-b border-sidebar-border">
-        <Button onClick={handleNew} className="w-full justify-start gap-2" variant="default">
+      <div className="p-3 space-y-3 border-b border-sidebar-border">
+        <div className="flex items-center gap-2 px-1 pt-1">
+          <img src={logo} alt="Nova" width={28} height={28} className="h-7 w-7" />
+          <span className="text-base font-semibold tracking-tight text-brand-gradient">
+            Nova
+          </span>
+        </div>
+        <Button
+          onClick={handleNew}
+          className="w-full justify-start gap-2 bg-brand-gradient text-white border-0 hover:opacity-90 shadow-brand"
+        >
           <Plus className="h-4 w-4" /> New chat
         </Button>
         <div className="relative">
