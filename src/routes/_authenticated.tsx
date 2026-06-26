@@ -7,6 +7,7 @@ import { Sidebar, useActiveConversationId } from "@/components/chat/Sidebar";
 import { listConversations, type Conversation } from "@/lib/chat-db";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
