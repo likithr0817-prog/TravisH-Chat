@@ -52,18 +52,24 @@ export function ChatWindow({
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setToken(session?.access_token ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        headers: () => ({
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        }),
+        headers: async (): Promise<Record<string, string>> => {
+          const { data } = await supabase.auth.getSession();
+          const t = data.session?.access_token;
+          return t ? { Authorization: `Bearer ${t}` } : {};
+        },
         body: () => ({ conversationId, model }),
       }),
-    [token, conversationId, model],
+    [conversationId, model],
   );
 
   const { messages, sendMessage, status, stop, regenerate, setMessages } = useChat({
