@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import type { Database } from "@/integrations/supabase/types";
 
-const SYSTEM_PROMPT =
-  "You are a helpful, friendly AI assistant. Format responses with markdown. Use fenced code blocks with language hints. Be concise but thorough.";
+const SYSTEM_PROMPT = `You are a helpful, friendly AI assistant. Today's date is ${new Date().toISOString().slice(0, 10)}.
+Format responses with markdown. Use fenced code blocks with language hints. Be concise but thorough.
+You have a web_search tool powered by Firecrawl. Use it whenever the user asks about current events, recent news, today's date-sensitive info, prices, scores, weather, or anything that may have changed after your training cutoff. Always cite sources with markdown links.`;
 
 type Body = {
   messages?: UIMessage[];
@@ -105,10 +107,55 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const gateway = createLovableAiGatewayProvider(LOVABLE_API_KEY);
+        const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
+
+        const tools = FIRECRAWL_API_KEY
+          ? {
+              web_search: tool({
+                description:
+                  "Search the live web for current/recent information. Returns top results with title, url, and snippet.",
+                inputSchema: z.object({
+                  query: z.string().describe("Search query"),
+                  limit: z.number().int().min(1).max(10).optional().describe("Max results (default 5)"),
+                }),
+                execute: async ({ query, limit }) => {
+                  try {
+                    const res = await fetch("https://api.firecrawl.dev/v2/search", {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ query, limit: limit ?? 5 }),
+                    });
+                    if (!res.ok) {
+                      return { error: `Search failed: ${res.status} ${await res.text()}` };
+                    }
+                    const json = (await res.json()) as {
+                      data?: { web?: Array<{ title?: string; url?: string; description?: string }> } | Array<{ title?: string; url?: string; description?: string }>;
+                    };
+                    const raw = Array.isArray(json.data) ? json.data : json.data?.web ?? [];
+                    return {
+                      results: raw.slice(0, limit ?? 5).map((r) => ({
+                        title: r.title,
+                        url: r.url,
+                        snippet: r.description,
+                      })),
+                    };
+                  } catch (e) {
+                    return { error: e instanceof Error ? e.message : "Search failed" };
+                  }
+                },
+              }),
+            }
+          : undefined;
+
         const result = streamText({
           model: gateway(model),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages),
+          tools,
+          stopWhen: stepCountIs(50),
         });
 
         return result.toUIMessageStreamResponse({
