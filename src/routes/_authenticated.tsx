@@ -67,10 +67,15 @@ function AuthedShell() {
         </SheetContent>
       </Sheet>
       <main className="flex-1 flex flex-col min-w-0">
-        <div className="md:hidden border-b border-border p-2">
+        <div className="md:hidden flex items-center justify-between border-b border-border px-2 py-2">
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} aria-label="Menu">
             <Menu className="h-5 w-5" />
           </Button>
+          <div className="flex items-center gap-1.5">
+            <img src={logo} alt="Nova" width={22} height={22} className="h-5 w-5" />
+            <span className="text-sm font-semibold text-brand-gradient">Nova</span>
+          </div>
+          <div className="w-9" />
         </div>
         <div className="flex-1 min-h-0">
           <Outlet />
