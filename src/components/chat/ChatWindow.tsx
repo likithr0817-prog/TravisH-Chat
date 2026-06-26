@@ -288,6 +288,27 @@ export function ChatWindow({
           onSubmit={handleSubmit}
           className="mx-auto max-w-3xl relative rounded-2xl border border-border bg-card shadow-sm focus-within:ring-2 focus-within:ring-ring transition"
         >
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 p-2 pb-0">
+              {attachments.map((a, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs"
+                >
+                  <Paperclip className="h-3 w-3" />
+                  <span className="max-w-[160px] truncate">{a.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAttachments((p) => p.filter((_, j) => j !== i))}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
+                    aria-label="Remove attachment"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <Textarea
             ref={textareaRef}
             value={input}
@@ -300,8 +321,41 @@ export function ChatWindow({
             }}
             placeholder="Message AI…"
             rows={1}
-            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pr-24 min-h-[52px] max-h-48"
+            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pl-20 pr-24 min-h-[52px] max-h-48"
           />
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".txt,.md,.json,.csv,.log,text/*,image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              handleFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <div className="absolute left-2 bottom-2 flex items-center gap-1">
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant={listening ? "default" : "ghost"}
+              className="h-8 w-8"
+              onClick={toggleVoice}
+              aria-label="Voice input"
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          </div>
           <div className="absolute right-2 bottom-2 flex items-center gap-1">
             {messages.length > 0 && !isBusy && (
               <Button
@@ -323,7 +377,7 @@ export function ChatWindow({
               <Button
                 type="submit"
                 size="icon"
-                disabled={!input.trim() || !token}
+                disabled={(!input.trim() && attachments.length === 0) || !token}
                 className="h-8 w-8"
                 aria-label="Send"
               >
