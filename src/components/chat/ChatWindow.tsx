@@ -42,6 +42,10 @@ export function ChatWindow({
   const [model, setModel] = useState(initialModel);
   const [input, setInput] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<{ name: string; text: string }[]>([]);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const titleSetRef = useRef(initialTitle !== "New chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
