@@ -1,7 +1,8 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X } from "lucide-react";
+import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X, Code2, Mail, Map, Lightbulb } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -194,9 +195,9 @@ export function ChatWindow({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-border px-4 py-2.5">
-        <div className="flex items-center gap-2 text-sm font-medium truncate">
-          <Sparkles className="h-4 w-4 text-primary" />
+      <header className="flex items-center justify-between border-b border-border/60 px-4 py-2.5 backdrop-blur-sm bg-background/70 sticky top-0 z-10">
+        <div className="flex items-center gap-2 text-sm font-medium truncate min-w-0">
+          <img src={logo} alt="" width={20} height={20} className="h-5 w-5 shrink-0" />
           <span className="truncate">{initialTitle}</span>
         </div>
         <Select
@@ -206,7 +207,7 @@ export function ChatWindow({
             updateConversation(conversationId, { model: v });
           }}
         >
-          <SelectTrigger className="w-[180px] h-8 text-xs">
+          <SelectTrigger className="w-[180px] h-8 text-xs rounded-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -222,27 +223,33 @@ export function ChatWindow({
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center py-24 gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <Sparkles className="h-6 w-6" />
+            <div className="flex flex-col items-center justify-center text-center py-16 sm:py-24 gap-4 animate-fade-in">
+              <div className="relative">
+                <div className="absolute inset-0 blur-2xl bg-brand-gradient opacity-40 rounded-full" />
+                <img src={logo} alt="Nova" width={72} height={72} className="relative h-18 w-18" />
               </div>
-              <h1 className="text-2xl font-semibold">How can I help today?</h1>
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+                Hi, I'm <span className="text-brand-gradient">Nova</span>
+              </h1>
               <p className="text-sm text-muted-foreground max-w-md">
-                Ask anything. Code, writing, ideas, analysis — start with a question or pick a prompt.
+                Your AI companion for ideas, code, writing, and research — with live web search built in.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 w-full max-w-xl">
                 {[
-                  "Explain quantum entanglement simply",
-                  "Write a SQL query for top customers",
-                  "Draft a polite follow-up email",
-                  "Plan a 3-day Lisbon itinerary",
-                ].map((p) => (
+                  { icon: Lightbulb, text: "Explain quantum entanglement simply" },
+                  { icon: Code2, text: "Write a SQL query for top customers" },
+                  { icon: Mail, text: "Draft a polite follow-up email" },
+                  { icon: Map, text: "Plan a 3-day Lisbon itinerary" },
+                ].map(({ icon: Icon, text }) => (
                   <button
-                    key={p}
-                    onClick={() => setInput(p)}
-                    className="rounded-lg border border-border p-3 text-sm text-left hover:bg-accent transition-colors"
+                    key={text}
+                    onClick={() => setInput(text)}
+                    className="group rounded-xl border border-border/60 bg-card/50 p-3 text-sm text-left hover:border-primary/40 hover:bg-accent/60 hover:-translate-y-0.5 transition-all duration-200 flex items-start gap-2.5"
                   >
-                    {p}
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-gradient/10 text-primary group-hover:bg-brand-gradient group-hover:text-white transition-colors">
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="leading-snug">{text}</span>
                   </button>
                 ))}
               </div>
@@ -253,10 +260,10 @@ export function ChatWindow({
             const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
             const isUser = m.role === "user";
             return (
-              <div key={m.id} className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
+              <div key={m.id} className={`flex gap-3 animate-fade-in ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && (
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
-                    AI
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
+                    <Sparkles className="h-4 w-4 text-white" />
                   </div>
                 )}
                 <div
