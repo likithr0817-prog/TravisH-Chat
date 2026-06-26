@@ -17,11 +17,13 @@ import { toast } from "sonner";
 import { updateConversation } from "@/lib/chat-db";
 
 const MODELS = [
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" },
+  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash (newest)" },
+  { id: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro (newest)" },
+  { id: "google/gemini-3.5-flash", label: "Gemini 3.5 Flash (newest)" },
+  { id: "openai/gpt-5.5", label: "GPT-5.5 (newest)" },
+  { id: "openai/gpt-5.5-pro", label: "GPT-5.5 Pro (newest)" },
   { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
   { id: "openai/gpt-5", label: "GPT-5" },
-  { id: "openai/gpt-5-mini", label: "GPT-5 mini" },
 ];
 
 type Props = {
