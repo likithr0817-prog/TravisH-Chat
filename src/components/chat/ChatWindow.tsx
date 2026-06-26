@@ -107,9 +107,81 @@ export function ChatWindow({
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const text = input.trim();
-    if (!text || isBusy || !token) return;
+    if ((!text && attachments.length === 0) || isBusy || !token) return;
+    let full = text;
+    if (attachments.length) {
+      const blocks = attachments
+        .map((a) => `\n\n[Attached file: ${a.name}]\n\`\`\`\n${a.text}\n\`\`\``)
+        .join("");
+      full = `${text}${blocks}`;
+    }
     setInput("");
-    await sendMessage({ text });
+    setAttachments([]);
+    await sendMessage({ text: full });
+  };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files) return;
+    const next: { name: string; text: string }[] = [];
+    for (const f of Array.from(files)) {
+      if (f.size > 2 * 1024 * 1024) {
+        toast.error(`${f.name} is too large (max 2MB)`);
+        continue;
+      }
+      if (f.type.startsWith("image/")) {
+        toast.message(`${f.name} attached as reference (vision parsing not enabled)`);
+        next.push({ name: f.name, text: `<image: ${f.name}, ${Math.round(f.size / 1024)}KB>` });
+        continue;
+      }
+      try {
+        const text = await f.text();
+        next.push({ name: f.name, text: text.slice(0, 50000) });
+      } catch {
+        toast.error(`Failed to read ${f.name}`);
+      }
+    }
+    setAttachments((prev) => [...prev, ...next]);
+  };
+
+  const toggleVoice = () => {
+    const SR =
+      (typeof window !== "undefined" &&
+        ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+      null;
+    if (!SR) {
+      toast.error("Voice input not supported in this browser");
+      return;
+    }
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.lang = navigator.language || "en-US";
+    let finalText = "";
+    rec.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setInput((prev) => {
+        const base = prev.replace(/\s*\[\.\.\.\].*$/, "");
+        return (base + " " + finalText + (interim ? ` [...]${interim}` : "")).trimStart();
+      });
+    };
+    rec.onerror = () => setListening(false);
+    rec.onend = () => {
+      setListening(false);
+      setInput((prev) => prev.replace(/\s*\[\.\.\.\].*$/, "").trimEnd());
+    };
+    recognitionRef.current = rec;
+    rec.start();
+    setListening(true);
   };
 
   return (
