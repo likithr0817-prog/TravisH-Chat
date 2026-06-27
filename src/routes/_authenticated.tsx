@@ -72,8 +72,8 @@ function AuthedShell() {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-1.5">
-            <img src={logo} alt="Nova" width={22} height={22} className="h-5 w-5" />
-            <span className="text-sm font-semibold text-brand-gradient">Nova</span>
+            <img src={logo} alt="JABBI AI" width={22} height={22} className="h-5 w-5" />
+            <span className="text-sm font-semibold text-brand-gradient">JABBI AI</span>
           </div>
           <div className="w-9" />
         </div>
