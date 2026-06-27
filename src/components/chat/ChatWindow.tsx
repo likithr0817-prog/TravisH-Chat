@@ -256,9 +256,11 @@ export function ChatWindow({
             </div>
           )}
 
-          {messages.map((m) => {
+          {messages.map((m, idx) => {
             const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
             const isUser = m.role === "user";
+            const isLast = idx === messages.length - 1;
+            const isStreaming = !isUser && isLast && status === "streaming";
             return (
               <div key={m.id} className={`flex gap-3 animate-fade-in ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && (
@@ -276,7 +278,10 @@ export function ChatWindow({
                   {isUser ? (
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>
                   ) : (
-                    <Markdown>{text || "…"}</Markdown>
+                    <div className="relative">
+                      <Markdown>{text || "…"}</Markdown>
+                      {isStreaming && <span className="stream-caret" aria-hidden="true" />}
+                    </div>
                   )}
                 </div>
               </div>
@@ -284,17 +289,21 @@ export function ChatWindow({
           })}
 
           {status === "submitted" && (
-            <div className="flex gap-3">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
-                AI
+            <div className="flex gap-3 animate-fade-in">
+              <div className="h-8 w-8 shrink-0 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
+                <Sparkles className="h-4 w-4 text-white" />
               </div>
-              <div className="flex items-center gap-1 pt-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="flex-1 max-w-[85%] space-y-2.5 pt-1">
+                <p className="text-sm text-shimmer font-medium">Thinking…</p>
+                <div className="space-y-2">
+                  <div className="h-3 rounded-md bg-shimmer w-[92%]" />
+                  <div className="h-3 rounded-md bg-shimmer w-[78%]" />
+                  <div className="h-3 rounded-md bg-shimmer w-[60%]" />
+                </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
 
