@@ -165,3 +165,51 @@
 @utility shadow-brand {
   box-shadow: var(--shadow-brand);
 }
+
+@utility bg-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-muted) 60%, transparent) 0%,
+    color-mix(in oklab, var(--color-muted-foreground) 25%, transparent) 50%,
+    color-mix(in oklab, var(--color-muted) 60%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@utility text-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-muted-foreground) 0%,
+    var(--color-foreground) 50%,
+    var(--color-muted-foreground) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@utility stream-caret {
+  display: inline-block;
+  width: 0.5ch;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--gradient-brand);
+  border-radius: 1px;
+  animation: caret-blink 1s steps(2, start) infinite;
+  transform: translateY(2px);
+}
+
