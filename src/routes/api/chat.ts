@@ -134,7 +134,7 @@ export const Route = createFileRoute("/api/chat")({
                   "Search the live web for current/recent information via Firecrawl. Use for anything time-sensitive, news, prices, recent releases, or facts that may have changed. Returns top results with title, url, snippet, and publishedDate when available.",
                 inputSchema: z.object({
                   query: z.string().describe("Focused search query. Include the year or 'today' for time-sensitive topics."),
-                  limit: z.number().int().min(1).max(10).optional().describe("Max results (default 8)"),
+                  limit: z.number().int().min(1).max(8).optional().describe("Max results (default 5)"),
                   freshness: z
                     .enum(["day", "week", "month", "year", "any"])
                     .optional()
