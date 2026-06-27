@@ -218,7 +218,7 @@ export const Route = createFileRoute("/api/chat")({
                     const md = json.data?.markdown ?? json.markdown ?? "";
                     const meta = json.data?.metadata ?? json.metadata ?? {};
                     // Cap content to keep tokens reasonable
-                    const capped = md.length > 12000 ? md.slice(0, 12000) + "\n\n…[truncated]" : md;
+                    const capped = md.length > 6000 ? md.slice(0, 6000) + "\n\n…[truncated]" : md;
                     return {
                       url,
                       title: meta.title,
