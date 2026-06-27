@@ -226,10 +226,10 @@ export function ChatWindow({
             <div className="flex flex-col items-center justify-center text-center py-16 sm:py-24 gap-4 animate-fade-in">
               <div className="relative">
                 <div className="absolute inset-0 blur-2xl bg-brand-gradient opacity-40 rounded-full" />
-                <img src={logo} alt="Nova" width={72} height={72} className="relative h-18 w-18" />
+                <img src={logo} alt="JABBI AI" width={72} height={72} className="relative h-18 w-18" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                Hi, I'm <span className="text-brand-gradient">Nova</span>
+                Hi, I'm <span className="text-brand-gradient">JABBI AI</span>
               </h1>
               <p className="text-sm text-muted-foreground max-w-md">
                 Your AI companion for ideas, code, writing, and research — with live web search built in.

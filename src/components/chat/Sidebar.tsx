@@ -97,9 +97,9 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
     <aside className="flex h-full w-72 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
       <div className="p-3 space-y-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-1 pt-1">
-          <img src={logo} alt="Nova" width={28} height={28} className="h-7 w-7" />
+          <img src={logo} alt="JABBI AI" width={28} height={28} className="h-7 w-7" />
           <span className="text-base font-semibold tracking-tight text-brand-gradient">
-            Nova
+            JABBI AI
           </span>
         </div>
         <Button
