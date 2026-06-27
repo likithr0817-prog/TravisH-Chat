@@ -175,7 +175,7 @@ export const Route = createFileRoute("/api/chat")({
                     return {
                       query,
                       retrievedAt: new Date().toISOString(),
-                      results: raw.slice(0, limit ?? 8).map((r) => ({
+                      results: raw.slice(0, limit ?? 5).map((r) => ({
                         title: r.title,
                         url: r.url,
                         snippet: r.description,
