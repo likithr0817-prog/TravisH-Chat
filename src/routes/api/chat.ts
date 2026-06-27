@@ -239,7 +239,7 @@ export const Route = createFileRoute("/api/chat")({
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages),
           tools,
-          stopWhen: stepCountIs(50),
+          stopWhen: stepCountIs(6),
         });
 
 
