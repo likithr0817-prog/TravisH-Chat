@@ -150,7 +150,7 @@ export const Route = createFileRoute("/api/chat")({
                     };
                     const body: Record<string, unknown> = {
                       query,
-                      limit: limit ?? 8,
+                      limit: limit ?? 5,
                     };
                     if (freshness && freshness !== "any" && tbsMap[freshness]) {
                       body.tbs = tbsMap[freshness];
