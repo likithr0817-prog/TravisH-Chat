@@ -84,9 +84,12 @@ export function ChatWindow({
     onError: (e) => toast.error(e.message || "Something went wrong"),
   });
 
+  // Only reset messages when switching to a different conversation,
+  // NOT on every parent re-render (which would abort an in-flight stream).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setMessages(initialMessages);
-  }, [conversationId, initialMessages, setMessages]);
+  }, [conversationId]);
 
   // Auto-scroll
   useEffect(() => {
