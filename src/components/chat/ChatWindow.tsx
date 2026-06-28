@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Markdown } from "./Markdown";
+import { Sources, SearchingIndicator } from "./Sources";
 import { toast } from "sonner";
 import { updateConversation } from "@/lib/chat-db";
 
@@ -79,6 +80,7 @@ export function ChatWindow({
     id: conversationId,
     messages: initialMessages,
     transport,
+    experimental_throttle: 50,
     onError: (e) => toast.error(e.message || "Something went wrong"),
   });
 
@@ -279,8 +281,10 @@ export function ChatWindow({
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>
                   ) : (
                     <div className="relative">
+                      <SearchingIndicator message={m} />
                       <Markdown>{text || "…"}</Markdown>
                       {isStreaming && <span className="stream-caret" aria-hidden="true" />}
+                      <Sources message={m} />
                     </div>
                   )}
                 </div>
