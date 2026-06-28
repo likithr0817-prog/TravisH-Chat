@@ -80,6 +80,7 @@ export function ChatWindow({
     id: conversationId,
     messages: initialMessages,
     transport,
+    experimental_throttle: 50,
     onError: (e) => toast.error(e.message || "Something went wrong"),
   });
 
