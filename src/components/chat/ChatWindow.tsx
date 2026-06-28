@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Markdown } from "./Markdown";
+import { Sources, SearchingIndicator } from "./Sources";
 import { toast } from "sonner";
 import { updateConversation } from "@/lib/chat-db";
 
