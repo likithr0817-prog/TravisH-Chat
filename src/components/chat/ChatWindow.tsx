@@ -281,8 +281,10 @@ export function ChatWindow({
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>
                   ) : (
                     <div className="relative">
+                      <SearchingIndicator message={m} />
                       <Markdown>{text || "…"}</Markdown>
                       {isStreaming && <span className="stream-caret" aria-hidden="true" />}
+                      <Sources message={m} />
                     </div>
                   )}
                 </div>
