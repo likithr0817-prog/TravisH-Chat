@@ -120,10 +120,20 @@ export function ChatWindow({
 
   const isBusy = status === "submitted" || status === "streaming";
 
+  const lastMessage = messages[messages.length - 1];
+  const lastAssistantText =
+    lastMessage?.role === "assistant"
+      ? lastMessage.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim()
+      : "";
+  const emptyAssistantError =
+    status === "ready" && lastMessage?.role === "assistant" && !lastAssistantText;
+
   const chatError = error?.message
     ? /An error occurred/i.test(error.message)
       ? "The AI could not generate a response. If this keeps happening, the workspace may need more AI credits."
       : error.message
+    : emptyAssistantError
+    ? "The AI could not generate a response. Current backend logs show the AI request is being rejected because workspace AI credits are exhausted."
     : null;
 
   useEffect(() => {
