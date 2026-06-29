@@ -53,6 +53,8 @@ export function ChatWindow({
   const titleSetRef = useRef(initialTitle !== "New chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const submitLockRef = useRef(false);
+  const lastSubmitRef = useRef<{ key: string; at: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
@@ -118,10 +120,14 @@ export function ChatWindow({
 
   const isBusy = status === "submitted" || status === "streaming";
 
+  useEffect(() => {
+    if (!isBusy) submitLockRef.current = false;
+  }, [isBusy]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const text = input.trim();
-    if ((!text && attachments.length === 0) || isBusy || !token) return;
+    if ((!text && attachments.length === 0) || isBusy || !token || submitLockRef.current) return;
     let full = text;
     if (attachments.length) {
       const blocks = attachments
@@ -129,9 +135,21 @@ export function ChatWindow({
         .join("");
       full = `${text}${blocks}`;
     }
+
+    const duplicateKey = `${conversationId}:${full}`;
+    const now = Date.now();
+    if (lastSubmitRef.current?.key === duplicateKey && now - lastSubmitRef.current.at < 1500) return;
+
+    submitLockRef.current = true;
+    lastSubmitRef.current = { key: duplicateKey, at: now };
     setInput("");
     setAttachments([]);
-    await sendMessage({ text: full });
+    try {
+      await sendMessage({ text: full });
+    } catch (error) {
+      submitLockRef.current = false;
+      toast.error(error instanceof Error ? error.message : "Failed to send message");
+    }
   };
 
   const handleFiles = async (files: FileList | null) => {
@@ -347,6 +365,7 @@ export function ChatWindow({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
+                e.stopPropagation();
                 handleSubmit();
               }
             }}
