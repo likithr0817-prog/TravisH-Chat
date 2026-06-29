@@ -40,6 +40,18 @@ type Body = {
   model?: string;
 };
 
+function clientSafeAiError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/\b402\b|credit|billing|payment/i.test(message)) {
+    return "AI credits are exhausted for this workspace. Add credits, then try again.";
+  }
+  if (/\b429\b|rate limit|too many requests/i.test(message)) {
+    return "The AI is rate limited right now. Please wait a moment and try again.";
+  }
+  console.error("AI stream failed", error);
+  return "The AI response failed before it could finish. Please try again.";
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -248,11 +260,15 @@ export const Route = createFileRoute("/api/chat")({
           messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(6),
+          onError: ({ error }) => {
+            console.error("AI stream failed", error);
+          },
         });
 
 
         return result.toUIMessageStreamResponse({
           originalMessages: messages,
+          onError: clientSafeAiError,
           onFinish: async ({ messages: finalMessages }) => {
             const assistant = [...finalMessages].reverse().find((m) => m.role === "assistant");
             if (!assistant) return;
