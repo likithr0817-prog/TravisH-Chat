@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X, Code2, Mail, Map, Lightbulb } from "lucide-react";
+import { AlertCircle, ArrowUp, Mic, MicOff, Paperclip, RefreshCcw, Square, Sparkles, X, Code2, Mail, Map, Lightbulb } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +53,8 @@ export function ChatWindow({
   const titleSetRef = useRef(initialTitle !== "New chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const submitLockRef = useRef(false);
+  const lastSubmitRef = useRef<{ key: string; at: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
@@ -76,7 +78,7 @@ export function ChatWindow({
     [conversationId, model],
   );
 
-  const { messages, sendMessage, status, stop, regenerate, setMessages } = useChat({
+  const { messages, sendMessage, status, stop, regenerate, setMessages, error, clearError } = useChat({
     id: conversationId,
     messages: initialMessages,
     transport,
@@ -118,10 +120,30 @@ export function ChatWindow({
 
   const isBusy = status === "submitted" || status === "streaming";
 
+  const lastMessage = messages[messages.length - 1];
+  const lastAssistantText =
+    lastMessage?.role === "assistant"
+      ? lastMessage.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim()
+      : "";
+  const emptyAssistantError =
+    status === "ready" && lastMessage?.role === "assistant" && !lastAssistantText;
+
+  const chatError = error?.message
+    ? /An error occurred/i.test(error.message)
+      ? "The AI could not generate a response. If this keeps happening, the workspace may need more AI credits."
+      : error.message
+    : emptyAssistantError
+    ? "The AI could not generate a response. Current backend logs show the AI request is being rejected because workspace AI credits are exhausted."
+    : null;
+
+  useEffect(() => {
+    if (!isBusy) submitLockRef.current = false;
+  }, [isBusy]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const text = input.trim();
-    if ((!text && attachments.length === 0) || isBusy || !token) return;
+    if ((!text && attachments.length === 0) || isBusy || !token || submitLockRef.current) return;
     let full = text;
     if (attachments.length) {
       const blocks = attachments
@@ -129,9 +151,22 @@ export function ChatWindow({
         .join("");
       full = `${text}${blocks}`;
     }
+
+    const duplicateKey = `${conversationId}:${full}`;
+    const now = Date.now();
+    if (lastSubmitRef.current?.key === duplicateKey && now - lastSubmitRef.current.at < 1500) return;
+
+    submitLockRef.current = true;
+    lastSubmitRef.current = { key: duplicateKey, at: now };
+    clearError();
     setInput("");
     setAttachments([]);
-    await sendMessage({ text: full });
+    try {
+      await sendMessage({ text: full });
+    } catch (error) {
+      submitLockRef.current = false;
+      toast.error(error instanceof Error ? error.message : "Failed to send message");
+    }
   };
 
   const handleFiles = async (files: FileList | null) => {
@@ -311,6 +346,18 @@ export function ChatWindow({
             </div>
           )}
 
+          {chatError && !isBusy && (
+            <div className="flex gap-3 animate-fade-in" role="alert">
+              <div className="h-8 w-8 shrink-0 rounded-full border border-destructive/30 bg-destructive/10 flex items-center justify-center text-destructive">
+                <AlertCircle className="h-4 w-4" />
+              </div>
+              <div className="max-w-[85%] rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <p className="font-medium">Response failed</p>
+                <p className="mt-1 text-destructive/90">{chatError}</p>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -344,9 +391,13 @@ export function ChatWindow({
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onInput={() => {
+              if (error) clearError();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
+                e.stopPropagation();
                 handleSubmit();
               }
             }}
