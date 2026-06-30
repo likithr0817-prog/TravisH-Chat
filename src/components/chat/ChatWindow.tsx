@@ -19,11 +19,7 @@ import { toast } from "sonner";
 import { updateConversation } from "@/lib/chat-db";
 
 const MODELS = [
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash (newest)" },
-  { id: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro (newest)" },
-  { id: "google/gemini-3.5-flash", label: "Gemini 3.5 Flash (newest)" },
-  { id: "openai/gpt-5.5", label: "GPT-5.5 (newest)" },
-  { id: "openai/gpt-5.5-pro", label: "GPT-5.5 Pro (newest)" },
+  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" },
   { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
   { id: "openai/gpt-5", label: "GPT-5" },
 ];
@@ -133,7 +129,7 @@ export function ChatWindow({
       ? "The AI could not generate a response. If this keeps happening, the workspace may need more AI credits."
       : error.message
     : emptyAssistantError
-    ? "The AI could not generate a response. Current backend logs show the AI request is being rejected because workspace AI credits are exhausted."
+    ? "The AI could not generate a response. Please try again; if it repeats, switch to Gemini 3 Flash or start a new chat."
     : null;
 
   useEffect(() => {
@@ -320,7 +316,7 @@ export function ChatWindow({
                   ) : (
                     <div className="relative">
                       <SearchingIndicator message={m} />
-                      <Markdown>{text || "…"}</Markdown>
+                      {text ? <Markdown>{text}</Markdown> : <p className="text-sm text-muted-foreground">Response did not complete.</p>}
                       {isStreaming && <span className="stream-caret" aria-hidden="true" />}
                       <Sources message={m} />
                     </div>
