@@ -5,6 +5,12 @@ import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import type { Database } from "@/integrations/supabase/types";
 
+const SUPPORTED_MODELS = new Set([
+  "google/gemini-3-flash-preview",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5",
+]);
+
 const TODAY = new Date().toISOString().slice(0, 10);
 const TODAY_HUMAN = new Date().toLocaleDateString("en-US", {
   weekday: "long",
@@ -88,7 +94,10 @@ export const Route = createFileRoute("/api/chat")({
         const body = (await request.json()) as Body;
         const messages = Array.isArray(body.messages) ? body.messages : [];
         const conversationId = body.conversationId;
-        const model = body.model || "google/gemini-3-flash-preview";
+        const requestedModel = body.model || "google/gemini-3-flash-preview";
+        const model = SUPPORTED_MODELS.has(requestedModel)
+          ? requestedModel
+          : "google/gemini-3-flash-preview";
 
         if (!conversationId) return new Response("conversationId required", { status: 400 });
 
