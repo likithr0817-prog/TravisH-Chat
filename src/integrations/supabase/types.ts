@@ -20,6 +20,8 @@ export type Database = {
           id: string
           model: string
           pinned: boolean
+          summary: string | null
+          summary_up_to_message_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -29,6 +31,8 @@ export type Database = {
           id?: string
           model?: string
           pinned?: boolean
+          summary?: string | null
+          summary_up_to_message_id?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -38,6 +42,8 @@ export type Database = {
           id?: string
           model?: string
           pinned?: boolean
+          summary?: string | null
+          summary_up_to_message_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string

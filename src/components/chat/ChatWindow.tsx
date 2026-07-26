@@ -169,8 +169,8 @@ export function ChatWindow({
     if (!files) return;
     const next: { name: string; text: string }[] = [];
     for (const f of Array.from(files)) {
-      if (f.size > 2 * 1024 * 1024) {
-        toast.error(`${f.name} is too large (max 2MB)`);
+      if (f.size > 10 * 1024 * 1024) {
+        toast.error(`${f.name} is too large (max 10MB)`);
         continue;
       }
       if (f.type.startsWith("image/")) {
@@ -180,7 +180,8 @@ export function ChatWindow({
       }
       try {
         const text = await f.text();
-        next.push({ name: f.name, text: text.slice(0, 50000) });
+        // Server auto-summarizes anything oversized before sending to the model.
+        next.push({ name: f.name, text });
       } catch {
         toast.error(`Failed to read ${f.name}`);
       }
