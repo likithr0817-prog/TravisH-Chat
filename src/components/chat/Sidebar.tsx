@@ -94,33 +94,41 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
   };
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
-      <div className="p-3 space-y-3 border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-1 pt-1">
-          <img src={logo} alt="JABBI AI" width={28} height={28} className="h-7 w-7" />
-          <span className="text-base font-semibold tracking-tight text-brand-gradient">
+    <aside className="relative flex h-full w-72 flex-col border-r border-border/40 glass-panel text-sidebar-foreground">
+      <div className="p-3 space-y-3 border-b border-border/40">
+        <div className="flex items-center gap-2.5 px-1 pt-1">
+          <div className="relative flex h-8 w-8 items-center justify-center">
+            <div className="absolute inset-0 rounded-xl bg-brand-gradient opacity-40 blur-md" aria-hidden="true" />
+            <img src={logo} alt="" width={32} height={32} className="relative h-8 w-8 rounded-xl" />
+          </div>
+          <span className="text-base font-semibold tracking-tight text-brand-shimmer">
             JABBI AI
           </span>
         </div>
         <Button
           onClick={handleNew}
-          className="w-full justify-start gap-2 bg-brand-gradient text-white border-0 hover:opacity-90 shadow-brand"
+          className="w-full justify-start gap-2 bg-brand-gradient text-white border-0 hover:opacity-95 hover:-translate-y-0.5 shadow-brand transition-all duration-200"
         >
           <Plus className="h-4 w-4" /> New chat
         </Button>
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search chats"
-            className="pl-8 h-9"
+            className="pl-8 h-9 bg-background/40 border-border/50 focus-visible:border-primary/40"
           />
         </div>
       </div>
 
       <ScrollArea className="flex-1">
         <nav className="p-2 space-y-0.5">
+          {filtered.length > 0 && (
+            <p className="px-2 pt-1 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+              Recent
+            </p>
+          )}
           {filtered.length === 0 ? (
             <p className="px-2 py-6 text-center text-xs text-muted-foreground">
               {query ? "No matches" : "No chats yet"}
@@ -129,10 +137,18 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
             filtered.map((c) => (
               <div
                 key={c.id}
-                className={`group flex items-center gap-1 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent ${
-                  activeId === c.id ? "bg-sidebar-accent" : ""
+                className={`group relative flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm hover-lift hover:bg-sidebar-accent/60 ${
+                  activeId === c.id
+                    ? "bg-sidebar-accent/70 shadow-sm ring-1 ring-border/50"
+                    : ""
                 }`}
               >
+                {activeId === c.id && (
+                  <span
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r bg-brand-gradient"
+                    aria-hidden="true"
+                  />
+                )}
                 <Link
                   to="/c/$conversationId"
                   params={{ conversationId: c.id }}
@@ -167,8 +183,8 @@ export function Sidebar({ conversations, refetch, activeId, onClose }: Props) {
         </nav>
       </ScrollArea>
 
-      <div className="border-t border-sidebar-border p-3 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
+      <div className="border-t border-border/40 p-3 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-white text-xs font-medium shadow-brand">
           {(user?.email ?? "?").slice(0, 1).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
