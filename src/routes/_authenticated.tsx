@@ -52,12 +52,13 @@ function AuthedShell() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background text-foreground">
-      <div className="hidden md:block">
+    <div className="aurora-bg flex h-screen w-full bg-background text-foreground">
+      <div className="aurora-blobs" aria-hidden="true" />
+      <div className="hidden md:block relative z-10">
         <Sidebar conversations={conversations} refetch={refetch} activeId={activeId} />
       </div>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="p-0 w-72">
+        <SheetContent side="left" className="p-0 w-72 border-r border-border/40">
           <Sidebar
             conversations={conversations}
             refetch={refetch}
@@ -66,8 +67,8 @@ function AuthedShell() {
           />
         </SheetContent>
       </Sheet>
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="md:hidden flex items-center justify-between border-b border-border px-2 py-2">
+      <main className="flex-1 flex flex-col min-w-0 relative z-10">
+        <div className="md:hidden flex items-center justify-between border-b border-border/50 glass-panel px-2 py-2">
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)} aria-label="Menu">
             <Menu className="h-5 w-5" />
           </Button>

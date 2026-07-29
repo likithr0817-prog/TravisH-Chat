@@ -232,9 +232,12 @@ export function ChatWindow({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-border/60 px-4 py-2.5 backdrop-blur-sm bg-background/70 sticky top-0 z-10">
+      <header className="flex items-center justify-between border-b border-border/40 glass-panel px-4 py-2.5 sticky top-0 z-10">
         <div className="flex items-center gap-2 text-sm font-medium truncate min-w-0">
-          <img src={logo} alt="" width={20} height={20} className="h-5 w-5 shrink-0" />
+          <div className="relative h-6 w-6 shrink-0">
+            <div className="absolute inset-0 rounded-lg bg-brand-gradient opacity-40 blur-md" aria-hidden="true" />
+            <img src={logo} alt="" width={24} height={24} className="relative h-6 w-6 rounded-lg" />
+          </div>
           <span className="truncate">{initialTitle}</span>
         </div>
         <Select
@@ -244,7 +247,7 @@ export function ChatWindow({
             updateConversation(conversationId, { model: v });
           }}
         >
-          <SelectTrigger className="w-[180px] h-8 text-xs rounded-full">
+          <SelectTrigger className="w-[180px] h-8 text-xs rounded-full border-border/50 bg-background/40 hover:border-primary/40 transition-colors">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -260,33 +263,49 @@ export function ChatWindow({
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center py-16 sm:py-24 gap-4 animate-fade-in">
-              <div className="relative">
-                <div className="absolute inset-0 blur-2xl bg-brand-gradient opacity-40 rounded-full" />
-                <img src={logo} alt="JABBI AI" width={72} height={72} className="relative h-18 w-18" />
+            <div className="flex flex-col items-center justify-center text-center py-16 sm:py-24 gap-5 animate-msg-in">
+              <div className="relative animate-float">
+                <div
+                  className="absolute inset-0 rounded-full bg-brand-gradient opacity-50 blur-3xl scale-150"
+                  aria-hidden="true"
+                />
+                <div className="absolute -inset-4 rounded-full bg-brand-gradient opacity-20 blur-2xl animate-spin-slow" aria-hidden="true" />
+                <img
+                  src={logo}
+                  alt="JABBI AI"
+                  width={88}
+                  height={88}
+                  className="relative h-22 w-22 rounded-3xl shadow-brand-lg"
+                />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                Hi, I'm <span className="text-brand-gradient">JABBI AI</span>
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+                Hi, I'm <span className="text-brand-shimmer">JABBI AI</span>
               </h1>
               <p className="text-sm text-muted-foreground max-w-md">
                 Your AI companion for ideas, code, writing, and research — with live web search built in.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 w-full max-w-xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 w-full max-w-xl">
                 {[
                   { icon: Lightbulb, text: "Explain quantum entanglement simply" },
                   { icon: Code2, text: "Write a SQL query for top customers" },
                   { icon: Mail, text: "Draft a polite follow-up email" },
                   { icon: Map, text: "Plan a 3-day Lisbon itinerary" },
-                ].map(({ icon: Icon, text }) => (
+                ].map(({ icon: Icon, text }, i) => (
                   <button
                     key={text}
                     onClick={() => setInput(text)}
-                    className="group rounded-xl border border-border/60 bg-card/50 p-3 text-sm text-left hover:border-primary/40 hover:bg-accent/60 hover:-translate-y-0.5 transition-all duration-200 flex items-start gap-2.5"
+                    style={{ animation: `msg-in 400ms cubic-bezier(0.22,1,0.36,1) ${i * 70}ms both` }}
+                    className="group relative overflow-hidden rounded-2xl border border-border/50 glass-panel p-3.5 text-sm text-left hover-lift hover:border-primary/50 hover:shadow-brand flex items-start gap-3"
                   >
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-gradient/10 text-primary group-hover:bg-brand-gradient group-hover:text-white transition-colors">
-                      <Icon className="h-3.5 w-3.5" />
+                    <span
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: "var(--gradient-brand-soft)" }}
+                      aria-hidden="true"
+                    />
+                    <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-brand">
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <span className="leading-snug">{text}</span>
+                    <span className="relative leading-snug">{text}</span>
                   </button>
                 ))}
               </div>
@@ -299,16 +318,19 @@ export function ChatWindow({
             const isLast = idx === messages.length - 1;
             const isStreaming = !isUser && isLast && status === "streaming";
             return (
-              <div key={m.id} className={`flex gap-3 animate-fade-in ${isUser ? "justify-end" : "justify-start"}`}>
+              <div key={m.id} className={`flex gap-3 animate-msg-in ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && (
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
-                    <Sparkles className="h-4 w-4 text-white" />
+                  <div className="relative h-8 w-8 shrink-0">
+                    <div className="absolute inset-0 rounded-full bg-brand-gradient opacity-40 blur-md" aria-hidden="true" />
+                    <div className="relative h-8 w-8 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
                   </div>
                 )}
                 <div
                   className={`max-w-[85%] ${
                     isUser
-                      ? "rounded-2xl bg-primary text-primary-foreground px-4 py-2.5"
+                      ? "rounded-2xl bg-brand-gradient text-white px-4 py-2.5 shadow-brand"
                       : "text-foreground"
                   }`}
                 >
@@ -328,12 +350,15 @@ export function ChatWindow({
           })}
 
           {status === "submitted" && (
-            <div className="flex gap-3 animate-fade-in">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
-                <Sparkles className="h-4 w-4 text-white" />
+            <div className="flex gap-3 animate-msg-in">
+              <div className="relative h-8 w-8 shrink-0">
+                <div className="absolute inset-0 rounded-full bg-brand-gradient opacity-50 blur-md animate-pulse" aria-hidden="true" />
+                <div className="relative h-8 w-8 rounded-full bg-brand-gradient flex items-center justify-center shadow-brand">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
               </div>
               <div className="flex-1 max-w-[85%] space-y-2.5 pt-1">
-                <p className="text-sm text-shimmer font-medium">Thinking…</p>
+                <p className="text-sm text-brand-shimmer font-medium">Thinking…</p>
                 <div className="space-y-2">
                   <div className="h-3 rounded-md bg-shimmer w-[92%]" />
                   <div className="h-3 rounded-md bg-shimmer w-[78%]" />
@@ -344,7 +369,7 @@ export function ChatWindow({
           )}
 
           {chatError && !isBusy && (
-            <div className="flex gap-3 animate-fade-in" role="alert">
+            <div className="flex gap-3 animate-msg-in" role="alert">
               <div className="h-8 w-8 shrink-0 rounded-full border border-destructive/30 bg-destructive/10 flex items-center justify-center text-destructive">
                 <AlertCircle className="h-4 w-4" />
               </div>
@@ -358,17 +383,17 @@ export function ChatWindow({
         </div>
       </div>
 
-      <div className="border-t border-border bg-background px-4 py-3">
+      <div className="px-4 pt-2 pb-3">
         <form
           onSubmit={handleSubmit}
-          className="mx-auto max-w-3xl relative rounded-2xl border border-border bg-card shadow-sm focus-within:ring-2 focus-within:ring-ring transition"
+          className="mx-auto max-w-3xl relative rounded-2xl glass-panel shadow-brand/40 focus-within:shadow-brand hover:border-border/60 transition-all duration-300"
         >
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 p-2 pb-0">
               {attachments.map((a, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs"
+                  className="flex items-center gap-1 rounded-md border border-border/50 bg-background/40 px-2 py-1 text-xs animate-msg-in"
                 >
                   <Paperclip className="h-3 w-3" />
                   <span className="max-w-[160px] truncate">{a.name}</span>
@@ -398,9 +423,9 @@ export function ChatWindow({
                 handleSubmit();
               }
             }}
-            placeholder="Message AI…"
+            placeholder="Message JABBI AI…"
             rows={1}
-            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pl-20 pr-24 min-h-[52px] max-h-48"
+            className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-3 pl-20 pr-24 min-h-[56px] max-h-48"
           />
           <input
             ref={fileInputRef}
@@ -418,7 +443,7 @@ export function ChatWindow({
               type="button"
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
+              className="h-8 w-8 rounded-full hover:bg-accent/60 hover:text-primary transition-colors"
               onClick={() => fileInputRef.current?.click()}
               aria-label="Attach file"
             >
@@ -427,8 +452,12 @@ export function ChatWindow({
             <Button
               type="button"
               size="icon"
-              variant={listening ? "default" : "ghost"}
-              className="h-8 w-8"
+              variant="ghost"
+              className={`h-8 w-8 rounded-full transition-colors ${
+                listening
+                  ? "bg-brand-gradient text-white mic-pulse hover:opacity-90"
+                  : "hover:bg-accent/60 hover:text-primary"
+              }`}
               onClick={toggleVoice}
               aria-label="Voice input"
             >
@@ -441,7 +470,7 @@ export function ChatWindow({
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8"
+                className="h-8 w-8 rounded-full hover:bg-accent/60 hover:text-primary transition-colors"
                 onClick={() => regenerate()}
                 aria-label="Regenerate"
               >
@@ -449,7 +478,13 @@ export function ChatWindow({
               </Button>
             )}
             {isBusy ? (
-              <Button type="button" size="icon" onClick={stop} className="h-8 w-8" aria-label="Stop">
+              <Button
+                type="button"
+                size="icon"
+                onClick={stop}
+                className="h-9 w-9 rounded-full bg-brand-gradient hover:opacity-90 text-white shadow-brand"
+                aria-label="Stop"
+              >
                 <Square className="h-3.5 w-3.5" />
               </Button>
             ) : (
@@ -457,7 +492,7 @@ export function ChatWindow({
                 type="submit"
                 size="icon"
                 disabled={(!input.trim() && attachments.length === 0) || !token}
-                className="h-8 w-8"
+                className="h-9 w-9 rounded-full bg-brand-gradient hover:opacity-90 text-white shadow-brand disabled:opacity-40 disabled:shadow-none transition-all duration-200 hover:scale-105"
                 aria-label="Send"
               >
                 <ArrowUp className="h-4 w-4" />
