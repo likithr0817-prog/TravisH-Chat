@@ -134,9 +134,15 @@
 
 :root {
   --brand-from: oklch(0.62 0.22 295);
-  --brand-to: oklch(0.7 0.18 240);
+  --brand-to: oklch(0.78 0.14 205);
+  --brand-from-hex: #8B5CF6;
+  --brand-to-hex: #22D3EE;
   --gradient-brand: linear-gradient(135deg, var(--brand-from), var(--brand-to));
-  --shadow-brand: 0 10px 40px -10px color-mix(in oklab, var(--brand-from) 45%, transparent);
+  --gradient-brand-soft: linear-gradient(135deg,
+    color-mix(in oklab, var(--brand-from) 22%, transparent),
+    color-mix(in oklab, var(--brand-to) 22%, transparent));
+  --shadow-brand: 0 10px 40px -10px color-mix(in oklab, var(--brand-from) 55%, transparent);
+  --shadow-brand-lg: 0 24px 80px -20px color-mix(in oklab, var(--brand-from) 55%, transparent);
 }
 
 @layer base {
@@ -148,6 +154,17 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "cv11", "ss01";
+    font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Space Grotesk", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--brand-from) 35%, transparent);
+    color: var(--color-foreground);
   }
 }
 
@@ -164,6 +181,51 @@
 
 @utility shadow-brand {
   box-shadow: var(--shadow-brand);
+}
+
+@utility shadow-brand-lg {
+  box-shadow: var(--shadow-brand-lg);
+}
+
+/* Aurora ambient background — soft violet/cyan glow blobs */
+@utility aurora-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+@utility aurora-blobs {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(45rem 30rem at 15% 20%, color-mix(in oklab, var(--brand-from) 22%, transparent), transparent 60%),
+    radial-gradient(40rem 28rem at 85% 15%, color-mix(in oklab, var(--brand-to) 20%, transparent), transparent 60%),
+    radial-gradient(50rem 35rem at 60% 100%, color-mix(in oklab, var(--brand-from) 15%, transparent), transparent 65%);
+  filter: blur(40px) saturate(120%);
+  z-index: -1;
+  animation: aurora-drift 24s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-2%, 1%, 0) scale(1.05); }
+  100% { transform: translate3d(2%, -1%, 0) scale(1.02); }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@utility animate-float {
+  animation: float-y 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@utility animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
 }
 
 @utility bg-shimmer {
@@ -191,6 +253,19 @@
   animation: shimmer 2s linear infinite;
 }
 
+@utility text-brand-shimmer {
+  background-image: linear-gradient(90deg, var(--brand-from-hex), var(--brand-to-hex), var(--brand-from-hex));
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: brand-shimmer 5s linear infinite;
+}
+@keyframes brand-shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -198,7 +273,7 @@
 
 @keyframes caret-blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50%      { opacity: 0.35; }
 }
 
 @utility stream-caret {
@@ -208,8 +283,59 @@
   margin-left: 2px;
   vertical-align: text-bottom;
   background: var(--gradient-brand);
-  border-radius: 1px;
-  animation: caret-blink 1s steps(2, start) infinite;
+  border-radius: 2px;
+  box-shadow: 0 0 8px color-mix(in oklab, var(--brand-from) 60%, transparent);
+  animation: caret-blink 0.9s ease-in-out infinite;
   transform: translateY(2px);
 }
+
+@keyframes msg-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@utility animate-msg-in {
+  animation: msg-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+@utility glass-panel {
+  background: color-mix(in oklab, var(--color-card) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
+}
+
+@utility hover-lift {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 220ms ease,
+              border-color 220ms ease,
+              background-color 220ms ease;
+}
+@utility hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes mic-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-from) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 10px color-mix(in oklab, var(--brand-from) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-from) 0%, transparent); }
+}
+@utility mic-pulse {
+  animation: mic-pulse 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blobs,
+  .animate-float,
+  .animate-spin-slow,
+  .text-brand-shimmer,
+  .text-shimmer,
+  .bg-shimmer,
+  .stream-caret,
+  .animate-msg-in,
+  .mic-pulse {
+    animation: none !important;
+  }
+}
+
 
