@@ -310,9 +310,9 @@
               box-shadow 220ms ease,
               border-color 220ms ease,
               background-color 220ms ease;
-}
-@utility hover-lift:hover {
-  transform: translateY(-2px);
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
 @keyframes mic-pulse {
